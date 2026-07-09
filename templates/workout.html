@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Workout Planner{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="fw-bold mb-1"><i class="bi bi-lightning-charge-fill text-warning me-2"></i>Workout Planner</h2>
+      <p class="text-muted mb-0">Generate an AI-powered personalised workout plan tailored to your goals.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Configuration form -->
+    <div class="col-lg-4">
+      <div class="fb-card animate-fade-in">
+        <div class="fb-card-header">
+          <i class="bi bi-sliders2 me-2"></i>Plan Settings
+        </div>
+        <div class="fb-card-body">
+          <form id="workoutForm" novalidate>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Fitness Goal</label>
+              <select class="form-select fb-select" name="goal" id="goalSelect">
+                <option value="weight loss"   {% if profile.fitness_goal == 'weight_loss' %}selected{% endif %}>🔥 Weight Loss</option>
+                <option value="muscle gain"   {% if profile.fitness_goal == 'muscle_gain' %}selected{% endif %}>💪 Muscle Gain</option>
+                <option value="endurance"     {% if profile.fitness_goal == 'endurance'   %}selected{% endif %}>🏃 Endurance</option>
+                <option value="flexibility"   {% if profile.fitness_goal == 'flexibility' %}selected{% endif %}>🧘 Flexibility & Yoga</option>
+                <option value="general fitness" {% if not profile.fitness_goal or profile.fitness_goal == 'general' %}selected{% endif %}>⚡ General Fitness</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Experience Level</label>
+              <select class="form-select fb-select" name="experience" id="experienceSelect">
+                <option value="beginner"     {% if profile.experience == 'beginner'     %}selected{% endif %}>🌱 Beginner (0–6 months)</option>
+                <option value="intermediate" {% if profile.experience == 'intermediate' %}selected{% endif %}>🌿 Intermediate (6m–2yr)</option>
+                <option value="advanced"     {% if profile.experience == 'advanced'     %}selected{% endif %}>🌳 Advanced (2+ years)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Session Duration</label>
+              <div class="d-flex align-items-center gap-2">
+                <input type="range" class="form-range flex-grow-1" id="durationRange"
+                       min="15" max="90" step="5"
+                       value="{{ profile.workout_time or 30 }}"
+                       oninput="document.getElementById('durationVal').textContent=this.value"/>
+                <span class="fw-bold text-primary" id="durationVal" style="min-width:3rem">{{ profile.workout_time or 30 }}</span>
+                <span class="text-muted small">min</span>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Days per Week</label>
+              <div class="d-flex align-items-center gap-2">
+                <input type="range" class="form-range flex-grow-1" id="daysRange"
+                       min="2" max="7" step="1" value="5"
+                       oninput="document.getElementById('daysVal').textContent=this.value"/>
+                <span class="fw-bold text-primary" id="daysVal" style="min-width:1.5rem">5</span>
+                <span class="text-muted small">days</span>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Equipment Available</label>
+              <div class="row g-2">
+                {% for eq in ['No equipment', 'Dumbbells', 'Resistance bands', 'Yoga mat', 'Pull-up bar', 'Full gym'] %}
+                <div class="col-6">
+                  <div class="form-check fb-check-card">
+                    <input class="form-check-input" type="radio" name="equipment"
+                           id="eq{{ loop.index }}" value="{{ eq }}"
+                           {% if eq == 'No equipment' %}checked{% endif %}>
+                    <label class="form-check-label small" for="eq{{ loop.index }}">{{ eq }}</label>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <button type="button" id="generateBtn" class="btn fb-btn-primary w-100 btn-lg"
+                    onclick="generateWorkoutPlan()">
+              <i class="bi bi-stars me-2"></i>Generate My Plan
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Weekly target breakdown -->
+      <div class="fb-card mt-3 animate-fade-in" style="animation-delay:0.1s">
+        <div class="fb-card-header"><i class="bi bi-calendar3 me-2"></i>Weekly Targets</div>
+        <div class="fb-card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted">🏃 Cardio</span>
+            <strong>{{ weekly_plan.cardio }} min</strong>
+          </div>
+          <div class="progress mb-3" style="height:6px">
+            <div class="progress-bar bg-danger" style="width:{{ (weekly_plan.cardio / weekly_plan.total * 100) | int }}%"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted">💪 Strength</span>
+            <strong>{{ weekly_plan.strength }} min</strong>
+          </div>
+          <div class="progress mb-3" style="height:6px">
+            <div class="progress-bar bg-primary" style="width:{{ (weekly_plan.strength / weekly_plan.total * 100) | int }}%"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="small text-muted">🧘 Flexibility</span>
+            <strong>{{ weekly_plan.flexibility }} min</strong>
+          </div>
+          <div class="progress" style="height:6px">
+            <div class="progress-bar bg-success" style="width:{{ (weekly_plan.flexibility / weekly_plan.total * 100) | int }}%"></div>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between">
+            <span class="fw-semibold">Total</span>
+            <strong>{{ weekly_plan.total }} min/week</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan output -->
+    <div class="col-lg-8">
+      <div class="fb-card h-100 animate-fade-in" style="animation-delay:0.15s">
+        <div class="fb-card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-journal-richtext me-2"></i>Your Workout Plan</span>
+          <div id="planActions" class="d-none gap-2">
+            <button class="btn btn-sm fb-btn-outline" onclick="copyPlan()">
+              <i class="bi bi-clipboard me-1"></i>Copy
+            </button>
+            <a href="{{ url_for('chat') }}" class="btn btn-sm fb-btn-primary">
+              <i class="bi bi-chat-dots me-1"></i>Discuss with AI
+            </a>
+          </div>
+        </div>
+        <div class="fb-card-body">
+
+          <!-- Empty state -->
+          <div id="emptyPlan" class="text-center py-5">
+            <div class="fb-empty-icon mb-3">
+              <i class="bi bi-dumbbell"></i>
+            </div>
+            <h5 class="text-muted">No plan generated yet</h5>
+            <p class="text-muted small">Configure your settings on the left and click <strong>Generate My Plan</strong>.</p>
+          </div>
+
+          <!-- Loading state -->
+          <div id="planLoading" class="text-center py-5 d-none">
+            <div class="fb-spinner mb-3"></div>
+            <p class="text-muted">Crafting your personalised workout plan…</p>
+            <small class="text-muted">This may take 10–20 seconds.</small>
+          </div>
+
+          <!-- Plan content -->
+          <div id="planContent" class="fb-plan-output d-none"></div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/workout.js') }}"></script>
+{% endblock %}

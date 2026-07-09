@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Habit Tracker{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2 class="fw-bold mb-1"><i class="bi bi-check2-circle text-success me-2"></i>Daily Habit Tracker</h2>
+      <p class="text-muted mb-0">{{ today }} &mdash; Track your fitness habits and build lasting consistency.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+      <button class="btn fb-btn-primary" onclick="getMotivation()">
+        <i class="bi bi-stars me-2"></i>Get AI Motivation
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Habits list -->
+    <div class="col-lg-7">
+      <div class="fb-card animate-fade-in">
+        <div class="fb-card-header d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-journal-check me-2"></i>Today's Habits</span>
+          <button class="btn btn-sm fb-btn-outline" data-bs-toggle="modal" data-bs-target="#addHabitModal">
+            <i class="bi bi-plus-lg me-1"></i>Add Habit
+          </button>
+        </div>
+        <div class="fb-card-body" id="habitList">
+
+          <!-- Default habits (populated by JS) -->
+          <p class="text-muted text-center py-3" id="noHabitsMsg" style="display:none">
+            No habits yet. Click <strong>+ Add Habit</strong> to get started!
+          </p>
+
+          {% set default_habits = [
+            ("Morning Exercise", "bi-sunrise", "warning", "30 min workout or yoga"),
+            ("Drink 8 Glasses of Water", "bi-droplet-fill", "primary", "Stay hydrated throughout the day"),
+            ("Eat 5 Portions of Veg/Fruit", "bi-apple", "success", "Include in every meal"),
+            ("7–8 Hours Sleep", "bi-moon-stars-fill", "info", "Consistent sleep schedule"),
+            ("10-min Meditation / Deep Breathing", "bi-wind", "secondary", "Reduce stress & improve focus"),
+          ] %}
+
+          {% for name, icon, color, desc in default_habits %}
+          <div class="fb-habit-item" data-habit="{{ name }}">
+            <div class="d-flex align-items-center gap-3">
+              <button class="fb-habit-check" onclick="toggleHabit(this)" aria-label="Toggle {{ name }}">
+                <i class="bi bi-circle text-muted fs-5"></i>
+              </button>
+              <div class="fb-habit-icon bg-{{ color }} bg-opacity-10 text-{{ color }}">
+                <i class="bi {{ icon }}"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-semibold">{{ name }}</div>
+                <small class="text-muted">{{ desc }}</small>
+              </div>
+              <button class="btn btn-sm btn-link text-danger p-0" onclick="removeHabit(this)" title="Remove">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+      </div>
+
+      <!-- Streak & progress -->
+      <div class="row g-3 mt-1">
+        <div class="col-6">
+          <div class="fb-stat-card animate-fade-in" style="animation-delay:0.1s">
+            <div class="fb-stat-icon bg-gradient-orange">
+              <i class="bi bi-fire"></i>
+            </div>
+            <div class="fb-stat-body">
+              <div class="fb-stat-value" id="streakValue">0 <span class="fb-stat-unit">days</span></div>
+              <div class="fb-stat-label">Current Streak</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="fb-stat-card animate-fade-in" style="animation-delay:0.15s">
+            <div class="fb-stat-icon bg-gradient-green">
+              <i class="bi bi-check2-all"></i>
+            </div>
+            <div class="fb-stat-body">
+              <div class="fb-stat-value">
+                <span id="completedCount">0</span>/<span id="totalCount">0</span>
+                <span class="fb-stat-unit">done</span>
+              </div>
+              <div class="fb-stat-label">Today's Progress</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side panel: Water tracker + motivation -->
+    <div class="col-lg-5">
+
+      <!-- Water tracker -->
+      <div class="fb-card mb-3 animate-fade-in" style="animation-delay:0.05s">
+        <div class="fb-card-header">
+          <i class="bi bi-droplet-half me-2 text-primary"></i>Water Intake Tracker
+        </div>
+        <div class="fb-card-body text-center">
+          <div class="fb-water-visual mb-3" id="waterVisual">
+            {% for i in range(8) %}
+            <button class="fb-water-glass" id="glass{{ i }}" onclick="toggleGlass({{ i }})" title="Glass {{ i+1 }}">
+              <i class="bi bi-cup-straw"></i>
+            </button>
+            {% endfor %}
+          </div>
+          <div class="fw-semibold mb-1">
+            <span id="waterCount">0</span> / 8 glasses
+          </div>
+          <div class="progress" style="height:8px">
+            <div class="progress-bar bg-primary" id="waterProgress" style="width:0%"></div>
+          </div>
+          <small class="text-muted mt-1 d-block">Click each glass as you drink</small>
+        </div>
+      </div>
+
+      <!-- AI Motivation panel -->
+      <div class="fb-card animate-fade-in" style="animation-delay:0.1s">
+        <div class="fb-card-header">
+          <i class="bi bi-stars me-2 text-warning"></i>AI Motivation
+        </div>
+        <div class="fb-card-body">
+          <div id="motivationEmpty" class="text-center py-3">
+            <i class="bi bi-emoji-smile display-4 text-muted mb-2 d-block"></i>
+            <p class="text-muted mb-2">Click <strong>Get AI Motivation</strong> for a personalised message.</p>
+          </div>
+          <div id="motivationLoading" class="text-center py-3 d-none">
+            <div class="fb-spinner mb-2"></div>
+            <p class="text-muted small">Getting your personalised motivation…</p>
+          </div>
+          <div id="motivationContent" class="d-none fb-motivation-text"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Add Habit Modal -->
+<div class="modal fade" id="addHabitModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content fb-modal">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add New Habit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Habit Name</label>
+          <input type="text" class="form-control fb-input" id="newHabitName"
+                 placeholder="e.g. Evening walk for 20 minutes" maxlength="80">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Description (optional)</label>
+          <input type="text" class="form-control fb-input" id="newHabitDesc"
+                 placeholder="e.g. Around the park after dinner" maxlength="120">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Category</label>
+          <select class="form-select fb-select" id="newHabitCategory">
+            <option value="warning">🌅 Exercise</option>
+            <option value="primary">💧 Hydration</option>
+            <option value="success">🥗 Nutrition</option>
+            <option value="info">😴 Sleep</option>
+            <option value="secondary">🧘 Mindfulness</option>
+            <option value="danger">❤️ Wellness</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn fb-btn-primary" onclick="addHabit()" data-bs-dismiss="modal">
+          <i class="bi bi-plus-lg me-1"></i>Add Habit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/habits.js') }}"></script>
+{% endblock %}

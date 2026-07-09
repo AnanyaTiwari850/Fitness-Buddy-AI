@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Family Profiles{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="fw-bold mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Family Profiles</h2>
+      <p class="text-muted mb-0">Create separate fitness profiles for each family member for personalised coaching.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Profile form -->
+    <div class="col-lg-5">
+      <div class="fb-card animate-fade-in">
+        <div class="fb-card-header">
+          <i class="bi bi-person-gear me-2"></i>
+          <span id="formTitle">Edit Profile</span>
+        </div>
+        <div class="fb-card-body">
+          <form id="profileForm" novalidate>
+
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control fb-input" id="pName"
+                       value="{{ profile.name or '' }}"
+                       placeholder="e.g. Rahul, Priya, Grandpa…" maxlength="50" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Age</label>
+                <input type="number" class="form-control fb-input" id="pAge"
+                       value="{{ profile.age or '' }}"
+                       min="5" max="100" placeholder="Years">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Gender</label>
+                <select class="form-select fb-select" id="pGender">
+                  <option value="">Select…</option>
+                  <option value="male"   {% if profile.gender == 'male'   %}selected{% endif %}>Male</option>
+                  <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+                  <option value="other"  {% if profile.gender == 'other'  %}selected{% endif %}>Other</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Weight (kg)</label>
+                <input type="number" class="form-control fb-input" id="pWeight"
+                       value="{{ profile.weight_kg or '' }}"
+                       min="20" max="300" step="0.1" placeholder="kg">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Height (cm)</label>
+                <input type="number" class="form-control fb-input" id="pHeight"
+                       value="{{ profile.height_cm or '' }}"
+                       min="100" max="250" placeholder="cm">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Activity Level</label>
+                <select class="form-select fb-select" id="pActivity">
+                  <option value="">Select…</option>
+                  <option value="sedentary"   {% if profile.activity_level == 'sedentary'   %}selected{% endif %}>Sedentary</option>
+                  <option value="light"       {% if profile.activity_level == 'light'       %}selected{% endif %}>Light (1–3 days/week)</option>
+                  <option value="moderate"    {% if profile.activity_level == 'moderate'    %}selected{% endif %}>Moderate (3–5 days/week)</option>
+                  <option value="active"      {% if profile.activity_level == 'active'      %}selected{% endif %}>Active (6–7 days/week)</option>
+                  <option value="very_active" {% if profile.activity_level == 'very_active' %}selected{% endif %}>Very Active</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Primary Fitness Goal</label>
+                <select class="form-select fb-select" id="pGoal">
+                  <option value="">Select…</option>
+                  <option value="weight_loss"   {% if profile.fitness_goal == 'weight_loss'   %}selected{% endif %}>🔥 Weight Loss</option>
+                  <option value="muscle_gain"   {% if profile.fitness_goal == 'muscle_gain'   %}selected{% endif %}>💪 Muscle Gain</option>
+                  <option value="endurance"     {% if profile.fitness_goal == 'endurance'     %}selected{% endif %}>🏃 Endurance</option>
+                  <option value="flexibility"   {% if profile.fitness_goal == 'flexibility'   %}selected{% endif %}>🧘 Flexibility</option>
+                  <option value="general"       {% if profile.fitness_goal == 'general'       %}selected{% endif %}>⚡ General Fitness</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Workout Time (min)</label>
+                <input type="number" class="form-control fb-input" id="pWorkoutTime"
+                       value="{{ profile.workout_time or '' }}"
+                       min="10" max="180" placeholder="e.g. 45">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold">Experience</label>
+                <select class="form-select fb-select" id="pExperience">
+                  <option value="">Select…</option>
+                  <option value="beginner"     {% if profile.experience == 'beginner'     %}selected{% endif %}>Beginner</option>
+                  <option value="intermediate" {% if profile.experience == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                  <option value="advanced"     {% if profile.experience == 'advanced'     %}selected{% endif %}>Advanced</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Dietary Preference</label>
+                <select class="form-select fb-select" id="pDiet">
+                  <option value="">No preference</option>
+                  <option value="vegetarian"  {% if profile.dietary_pref == 'vegetarian'  %}selected{% endif %}>🥗 Vegetarian</option>
+                  <option value="vegan"       {% if profile.dietary_pref == 'vegan'       %}selected{% endif %}>🌱 Vegan</option>
+                  <option value="non-veg"     {% if profile.dietary_pref == 'non-veg'     %}selected{% endif %}>🍗 Non-Vegetarian</option>
+                  <option value="eggetarian"  {% if profile.dietary_pref == 'eggetarian'  %}selected{% endif %}>🥚 Eggetarian</option>
+                  <option value="jain"        {% if profile.dietary_pref == 'jain'        %}selected{% endif %}>🙏 Jain</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold">Health Notes <span class="text-muted fw-normal small">(optional)</span></label>
+                <textarea class="form-control fb-input" id="pHealthNotes" rows="2"
+                          maxlength="300"
+                          placeholder="e.g. Lower back pain, diabetes, hypertension…">{{ profile.health_notes or '' }}</textarea>
+                <div class="form-text text-warning">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                  Consult your doctor for medical conditions. Fitness Buddy does not provide medical advice.
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+              <button type="button" class="btn fb-btn-primary flex-grow-1" onclick="saveProfile()">
+                <i class="bi bi-floppy me-2"></i>Save Profile
+              </button>
+              <button type="button" class="btn fb-btn-outline" onclick="clearForm()">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Saved profiles -->
+    <div class="col-lg-7">
+      <div class="fb-card animate-fade-in" style="animation-delay:0.1s">
+        <div class="fb-card-header">
+          <i class="bi bi-people me-2"></i>Saved Family Profiles
+          <span class="badge bg-primary ms-2" id="profileCount">0</span>
+        </div>
+        <div class="fb-card-body">
+          <div id="noProfiles" class="text-center py-4">
+            <i class="bi bi-person-plus display-4 text-muted mb-3 d-block"></i>
+            <p class="text-muted">No profiles saved yet.<br>Fill in the form on the left to create your first profile.</p>
+          </div>
+          <div id="profilesGrid" class="row g-3"></div>
+        </div>
+      </div>
+
+      <!-- Profile tips -->
+      <div class="fb-card mt-3 animate-fade-in" style="animation-delay:0.15s">
+        <div class="fb-card-header"><i class="bi bi-info-circle me-2 text-info"></i>Profile Tips</div>
+        <div class="fb-card-body">
+          <ul class="mb-0 ps-3">
+            <li class="mb-2">Create separate profiles for each family member for personalised AI coaching.</li>
+            <li class="mb-2">The active profile (shown in the navbar) is used for all AI recommendations.</li>
+            <li class="mb-2">Switch profiles anytime — chat history resets when you switch.</li>
+            <li class="mb-0 text-warning"><i class="bi bi-exclamation-triangle me-1"></i>Health notes are for context only. Always consult a doctor for medical advice.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Pass saved profiles from server to JS
+  const SAVED_PROFILES = {{ all_profiles | tojson }};
+  const ACTIVE_PROFILE_NAME = {{ (profile.name or '') | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+{% endblock %}

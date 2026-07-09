@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}BMI Calculator{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-lg-4 py-4">
+
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="fw-bold mb-1"><i class="bi bi-calculator-fill text-primary me-2"></i>BMI & Health Calculator</h2>
+      <p class="text-muted mb-0">Calculate your BMI, daily calorie needs, ideal weight range, and hydration goals.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Input form -->
+    <div class="col-lg-4">
+      <div class="fb-card animate-fade-in">
+        <div class="fb-card-header"><i class="bi bi-input-cursor-text me-2"></i>Your Details</div>
+        <div class="fb-card-body">
+          <form id="bmiForm" novalidate>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Weight (kg) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="number" class="form-control fb-input" id="weight"
+                       min="20" max="300" step="0.1"
+                       value="{{ profile.weight_kg or '' }}"
+                       placeholder="e.g. 70" required>
+                <span class="input-group-text">kg</span>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Height (cm) <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <input type="number" class="form-control fb-input" id="height"
+                       min="100" max="250" step="1"
+                       value="{{ profile.height_cm or '' }}"
+                       placeholder="e.g. 170" required>
+                <span class="input-group-text">cm</span>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Age</label>
+              <input type="number" class="form-control fb-input" id="age"
+                     min="10" max="100" step="1"
+                     value="{{ profile.age or '' }}"
+                     placeholder="e.g. 28">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Gender</label>
+              <select class="form-select fb-select" id="gender">
+                <option value="male"   {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+                <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+                <option value="other"  {% if profile.gender == 'other' %}selected{% endif %}>Other / Prefer not to say</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Activity Level</label>
+              <select class="form-select fb-select" id="activity">
+                <option value="sedentary"   {% if profile.activity_level == 'sedentary'   %}selected{% endif %}>Sedentary (desk job, no exercise)</option>
+                <option value="light"       {% if profile.activity_level == 'light'       %}selected{% endif %}>Light (1–3 days/week)</option>
+                <option value="moderate"    {% if profile.activity_level == 'moderate'    %}selected{% endif %}>Moderate (3–5 days/week)</option>
+                <option value="active"      {% if profile.activity_level == 'active'      %}selected{% endif %}>Active (6–7 days/week)</option>
+                <option value="very_active" {% if profile.activity_level == 'very_active' %}selected{% endif %}>Very Active (athlete/manual labour)</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn fb-btn-primary w-100 btn-lg" onclick="calculateBMI()">
+              <i class="bi bi-calculator me-2"></i>Calculate
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="col-lg-8">
+
+      <!-- BMI Gauge -->
+      <div class="fb-card mb-3 animate-fade-in" style="animation-delay:0.1s">
+        <div class="fb-card-header"><i class="bi bi-speedometer me-2"></i>BMI Result</div>
+        <div class="fb-card-body">
+          <div id="bmiEmpty" class="text-center py-4">
+            <div class="fb-empty-icon"><i class="bi bi-speedometer"></i></div>
+            <p class="text-muted mt-2">Enter your details to see your BMI result.</p>
+          </div>
+          <div id="bmiResult" class="d-none">
+            <div class="row align-items-center">
+              <div class="col-md-4 text-center">
+                <div class="fb-bmi-gauge" id="bmiGauge">
+                  <div class="fb-bmi-value" id="bmiValue">—</div>
+                  <div class="small text-muted">BMI Score</div>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div class="mb-2">
+                  <span class="fs-5 fw-bold" id="bmiCategory">—</span>
+                </div>
+                <p class="text-muted" id="bmiAdvice">—</p>
+                <div class="fb-bmi-scale mt-3">
+                  <div class="fb-bmi-range" style="background:#17a2b8;flex:1.85"><small>Underweight<br><18.5</small></div>
+                  <div class="fb-bmi-range" style="background:#28a745;flex:6.5"><small>Normal<br>18.5–25</small></div>
+                  <div class="fb-bmi-range" style="background:#ffc107;flex:5"><small>Overweight<br>25–30</small></div>
+                  <div class="fb-bmi-range" style="background:#dc3545;flex:10"><small>Obese<br>>30</small></div>
+                </div>
+                <div class="mt-2 position-relative">
+                  <div class="fb-bmi-pointer" id="bmiPointer"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calorie & Water cards -->
+      <div class="row g-3" id="extraResults">
+        <div class="col-md-6">
+          <div class="fb-card animate-fade-in d-none" id="calorieCard" style="animation-delay:0.15s">
+            <div class="fb-card-header"><i class="bi bi-fire me-2 text-warning"></i>Daily Calorie Targets</div>
+            <div class="fb-card-body">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Maintenance</span>
+                <strong id="calMaint">—</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Weight Loss (~0.5kg/week)</span>
+                <strong id="calLoss" class="text-warning">—</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Aggressive Loss</span>
+                <strong id="calAggLoss" class="text-danger">—</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span class="text-muted">Lean Muscle Gain</span>
+                <strong id="calGain" class="text-success">—</strong>
+              </div>
+              <hr>
+              <small class="text-muted">Calories are estimates. Consult a nutritionist for medical advice.</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="fb-card animate-fade-in d-none" id="waterCard" style="animation-delay:0.2s">
+            <div class="fb-card-header"><i class="bi bi-droplet-fill me-2 text-primary"></i>Hydration & Ideal Weight</div>
+            <div class="fb-card-body">
+              <div class="text-center mb-3">
+                <div class="display-6 fw-bold text-primary" id="waterGoal">—</div>
+                <div class="text-muted small">Litres of water per day</div>
+              </div>
+              <hr>
+              <div class="text-center">
+                <div class="fw-bold text-success fs-5" id="idealRange">—</div>
+                <div class="text-muted small">Healthy weight range (kg)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Health tips -->
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="fb-card animate-fade-in" style="animation-delay:0.25s">
+        <div class="fb-card-header"><i class="bi bi-heart-pulse me-2 text-danger"></i>General Health Tips</div>
+        <div class="fb-card-body">
+          <div class="row g-3">
+            {% for tip in [
+              ("bi-egg-fried", "warning", "Balanced Nutrition", "Aim for meals with protein, complex carbs, healthy fats, and fibre. Include dal, sabzi, roti, and seasonal fruits."),
+              ("bi-lightning-charge", "primary", "Stay Active", "Even a 30-minute brisk walk 5 days a week significantly improves cardiovascular health and mood."),
+              ("bi-moon-stars", "info", "Quality Sleep", "7–9 hours of sleep per night helps muscle recovery, weight management, and mental clarity."),
+              ("bi-droplet", "success", "Hydrate Well", "Drink water throughout the day — not just when you feel thirsty. Start your morning with 1–2 glasses."),
+            ] %}
+            <div class="col-md-3 col-6">
+              <div class="fb-tip-card text-center p-3 rounded">
+                <i class="bi {{ tip[0] }} fs-2 text-{{ tip[1] }} mb-2 d-block"></i>
+                <div class="fw-semibold small mb-1">{{ tip[2] }}</div>
+                <div class="text-muted" style="font-size:0.78rem">{{ tip[3] }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/bmi.js') }}"></script>
+{% endblock %}
