@@ -241,7 +241,7 @@ CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8000", "app:app"]
 ## 🧰 Tech Stack
 
 - **Backend:** Python 3.10+, Flask 3.0, python-dotenv
-- **AI Model:** IBM watsonx.ai — Granite 3 8B Instruct (`ibm/granite-3-8b-instruct`)
+- **AI Model:** IBM watsonx.ai — Meta Llama 3.3 70B instruct 
 - **Frontend:** Bootstrap 5.3, Bootstrap Icons, Google Fonts (Inter)
 - **Deployment:** Gunicorn, Docker-ready
 
