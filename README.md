@@ -1,6 +1,6 @@
 # 🏋️ Fitness Buddy — AI-Powered Personal Fitness Coach
 
-> An intelligent fitness web application powered by **IBM watsonx.ai Granite** models.  
+> An intelligent fitness web application powered by **IBM watsonx.ai ** models.  
 > Built with Python Flask, Bootstrap 5, and a modern responsive UI.
 
 ---
@@ -9,7 +9,7 @@
 
 | Feature | Description |
 |---|---|
-| 🤖 **AI Fitness Coach** | Chat with IBM Granite 3 for personalised workout and nutrition advice |
+| 🤖 **AI Fitness Coach** | Chat with Meta Llma 3.3 70B instruct via IBM watsonx.ai for personalised workout and nutrition advice |
 | 🏃 **Workout Planner** | Generate AI-powered daily/weekly workout plans for any goal |
 | ⚖️ **BMI Calculator** | Calculate BMI, daily calorie needs, ideal weight range, hydration goals |
 | ✅ **Habit Tracker** | Track daily fitness habits, water intake, streaks, and get AI motivation |
@@ -99,7 +99,7 @@ Open `.env` and fill in your credentials:
 ```env
 IBM_API_KEY=your_ibm_cloud_api_key_here
 WATSONX_PROJECT_ID=your_watsonx_project_id_here
-WATSONX_URL=https://us-south.ml.cloud.ibm.com
+WATSONX_URL=https://jp-tok.ml.cloud.ibm.com
 FLASK_SECRET_KEY=your_random_secret_key_here
 FLASK_ENV=development
 ```
@@ -255,4 +255,4 @@ Always consult a qualified doctor, physiotherapist, or dietitian for medical con
 
 ---
 
-*Made with ❤️ using IBM watsonx.ai Granite*
+*Made with ❤️ using IBM watsonx.ai *
