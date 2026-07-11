@@ -14,7 +14,7 @@ from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
 logger = logging.getLogger(__name__)
 
 # ─── Model configuration ──────────────────────────────────────────────────────
-MODEL_ID = "meta-llama/llama-3-3-70b-instruct"          # IBM Granite 3 – 8B Instruct
+MODEL_ID = "meta-llama/llama-3-3-70b-instruct"          
 
 GENERATION_PARAMS = {
     GenParams.MAX_NEW_TOKENS: 1024,
@@ -58,7 +58,7 @@ def _get_model() -> ModelInference:
 
 def generate_response(prompt: str) -> str:
     """
-    Send *prompt* to the Granite model and return the generated text.
+    Send *prompt* to the model and return the generated text.
 
     Args:
         prompt: The fully-constructed prompt string.
