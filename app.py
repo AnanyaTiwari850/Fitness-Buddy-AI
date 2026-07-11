@@ -2,7 +2,7 @@
 app.py – Fitness Buddy Flask Application
 =========================================
 Entry point for the AI-powered Fitness Buddy web app.
-Integrates IBM watsonx.ai Granite models for personalized fitness coaching.
+Integrates IBM watsonx.ai  models for personalized fitness coaching.
 
 Run locally:
     pip install -r requirements.txt
@@ -113,7 +113,7 @@ MAX_HISTORY_TURNS = 10   # Keep last N user+assistant exchanges in session
 
 def build_prompt(user_message: str, history: list[dict], profile: dict) -> str:
     """
-    Assemble the full prompt sent to the Granite model.
+    Assemble the full prompt sent to the  model.
 
     Structure:
         [AGENT_INSTRUCTIONS]
